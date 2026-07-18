@@ -96,14 +96,38 @@ func (ro *Room) DrawCard() {
 				newCard := ro.Session.GetCard()
 				ro.Clients[ro.CurrPlayer].Hand = append(ro.Clients[ro.CurrPlayer].Hand, newCard)
 			}
-
 			// po pobraniu +x sie restetuje
 			ro.Session.Last.Special = "1"
 
 		} else {
-			log.Println("could not parse str-> from special +x card ")
+			log.Println("could not parse str-> from special +4 card ")
 
 		}
+
+	}else if ro.Session.Last.Number == 10 {
+
+		if ro.Session.Last.Special == ""{
+			for range 2 {
+				newCard := ro.Session.GetCard()
+				ro.Clients[ro.CurrPlayer].Hand = append(ro.Clients[ro.CurrPlayer].Hand, newCard)
+			}
+			// po pobraniu +x sie restetuje
+			ro.Session.Last.Special = "1"
+
+		}else if num, err := strconv.Atoi(ro.Session.Last.Special); err == nil {
+			for range num {
+				newCard := ro.Session.GetCard()
+				ro.Clients[ro.CurrPlayer].Hand = append(ro.Clients[ro.CurrPlayer].Hand, newCard)
+			}
+			// po pobraniu +x sie restetuje
+			ro.Session.Last.Special = "1"
+
+		} else {
+			log.Println("could not parse str-> from special +2 card ")
+
+		}
+
+
 
 	} else {
 
@@ -172,7 +196,6 @@ func (ro *Room) PlaceCard(card *game.Card) error {
 	}
 
 
-
 	if placeCard.Number == 10 {
 		if ro.Session.Last != nil && ro.Session.Last.Number == 10 {
 			if ro.Session.Last.Special != "" {
@@ -180,12 +203,28 @@ func (ro *Room) PlaceCard(card *game.Card) error {
 				num += 2
 				placeCard.Special = strconv.Itoa(num)
 
+				/// dla broacdacst
+				card.Special = strconv.Itoa(num)
+
 			} else {
 				placeCard.Special = "4"
+
+
+				/// dla broacdacst
+				card.Special = "2"
 			}
+		}else{
+			placeCard.Special = "2"
+			//tu sie juz troche getto robi
+			/// dla broacdacst
+			card.Special = "2"
+
 		}
 
-	} else {
+	}
+
+	/*c
+	else {
 		if ro.Session.Last != nil && ro.Session.Last.Number == 10 {
 			penalty := 2
 			if ro.Session.Last.Special != "" {
@@ -201,7 +240,7 @@ func (ro *Room) PlaceCard(card *game.Card) error {
 			ro.Session.Last.Special = ""
 		}
 	}
-
+	*/
 	// apply the efects
 	if placeCard.Number == 11 {
 		//reverse table moviment
