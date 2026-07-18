@@ -119,7 +119,8 @@ ReadReq:
 		_, payload, err := c.Read(ctx)
 		if err != nil {
 			log.Printf("Klient rozłączony: %v", err)
-			continue
+			//continue
+			return
 		}
 
 		var msg reqJoin

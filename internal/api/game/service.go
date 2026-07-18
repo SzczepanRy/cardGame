@@ -126,6 +126,11 @@ func (gs * GameState) CanPlace(card *Card) bool{
 	if card.Special == "wild"{
 		return true
 	}
+	if gs.Last.Color == "special" && gs.Last.Special == "1"{
+		// po pobraniu kart z +4
+		return true
+	}
+
 	if gs.Last.Special != "wild" && gs.Last.Color == "special"  && card.Color == "special" && card.Special != "wild"{
 		return true
 	}

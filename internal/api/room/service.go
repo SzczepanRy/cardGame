@@ -163,7 +163,15 @@ func (ro *Room) PlaceCard(card *game.Card) error {
 	if !ro.Session.CanPlace(card) {
 		return errors.New("did not pass canPlace")
 	}
+
 	placeCard := currClient.Hand[targetInd]
+
+	if card.Special == "wild" && placeCard.Special == "wild" {
+		// tu musiby zubdejtowac bo czasami przy wysylani wild , musimy przekazac kolor wybrany
+		placeCard.Color = card.Color
+	}
+
+
 
 	if placeCard.Number == 10 {
 		if ro.Session.Last != nil && ro.Session.Last.Number == 10 {
@@ -209,6 +217,7 @@ func (ro *Room) PlaceCard(card *game.Card) error {
 	if ro.Session.Last != nil && ro.Session.Last.Special != "wild" && ro.Session.Last.Color == "special" && placeCard.Color == "special" && placeCard.Special != "wild" {
 		num, _ := strconv.Atoi(ro.Session.Last.Special)
 		num += 4
+		log.Printf("maby good %v", num )
 		placeCard.Special = strconv.Itoa(num)
 	}
 
@@ -225,7 +234,7 @@ func (ro *Room) PlaceCard(card *game.Card) error {
 		}
 	*/
 
-	ro.Session.Last = card
+	ro.Session.Last = placeCard
 
 	/*
 	hand := currClient.Hand
