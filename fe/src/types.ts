@@ -19,4 +19,6 @@ export interface ServerResponse {
   Table?: Card;
   Error?: string;
   Message?: string;
+  CurrPlayer?: number;
+  CardsNumbers?:Array<number>;
 }

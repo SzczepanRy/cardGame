@@ -8,10 +8,27 @@ export const Route = createFileRoute('/createGame/')({
 
 //stores state
 
+
+/*
+CurrPlayer int `json:"CurrPlayer"`
+Cards []int `json:"Cards"`
+
+
+type TableRef struct {
+	Table *game.Card `json:"Table"`
+	CurrPlayer int `json:"CurrPlayer"`
+	CardsNumbers []int `json:"CardsNumbers"`
+}
+
+*/
+
+
 export default function CreateGameComponent() {
     const wsRef = useRef<WebSocket | null>(null)
     const [hand, setHand] = useState< Array<Card>| null>(null)
     const [table, setTable] = useState<Card| null>(null)
+    const [CurrPlayer, setCurrPlayer] = useState<number| null>(null)
+    const [CardsNumbers, setCardsNumbers] = useState< Array<number>| null>(null)
 
     const [srvMsg, setSrvMsg] = useState<string| null>(null)
     const [error, setError]  = useState<string | null>(null)
@@ -40,8 +57,17 @@ export default function CreateGameComponent() {
                     setHand(data.Hand)
                     setError(null)
                 }
+
                 if(data.Table){
                     setTable(data.Table)
+                    setError(null)
+                }
+                if (data.CurrPlayer !== undefined){
+                    setCurrPlayer(data.CurrPlayer)
+                    setError(null)
+                }
+                if(data.CardsNumbers){
+                    setCardsNumbers(data.CardsNumbers)
                     setError(null)
                 }
 
@@ -66,6 +92,10 @@ export default function CreateGameComponent() {
     const sendAction = (action:ClientMessage) =>{
         if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN){
             wsRef.current.send(JSON.stringify(action))
+            // ref after draw
+            if (action.action == "drawCard"){
+                sendAction({action:'getTable'})
+            }
         }else{
             console.error("brak polonczenia z serverem")
         }
@@ -75,6 +105,26 @@ export default function CreateGameComponent() {
     return (
         <div >
         {error && <div>{error}</div>}
+
+        {
+            CurrPlayer !== null &&(
+                <div>
+                    the curr player is {CurrPlayer}
+                </div>
+            )
+
+        }
+
+        {
+            CardsNumbers && (
+                CardsNumbers.map((el,i ) => {
+                    return (
+                        <div>player {i} has {el} cards </div>
+                    )
+                } )
+            )
+        }
+
 
         <div>
             <button

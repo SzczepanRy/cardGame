@@ -12,6 +12,10 @@ export default function JoinGameComponent() {
     const idRef = useRef<HTMLInputElement| null>(null)
     const [hand, setHand] = useState< Array<Card>| null>(null)
     const [table, setTable] = useState<Card| null>(null)
+    const [CurrPlayer, setCurrPlayer] = useState<number| null>(null)
+    const [CardsNumbers, setCardsNumbers] = useState< Array<number>| null>(null)
+
+
     const [error, setError]  = useState<string | null>(null)
     useEffect(()=>{
         const ws = new WebSocket('ws://localhost:8080/api/joinGame')
@@ -37,6 +41,17 @@ export default function JoinGameComponent() {
                     setTable(data.Table)
                     setError(null)
                 }
+                if (data.CurrPlayer !== undefined){
+                    setCurrPlayer(data.CurrPlayer)
+                    setError(null)
+                }
+
+                if(data.CardsNumbers){
+                    setCardsNumbers(data.CardsNumbers)
+                    setError(null)
+                }
+
+
 
             }catch(err){
                 console.error(err)
@@ -58,6 +73,7 @@ export default function JoinGameComponent() {
     const sendJoin = (req:ReqJoin) =>{
         if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN){
             wsRef.current.send(JSON.stringify(req))
+
         }else{
             console.error("brak polonczenia z serverem")
         }
@@ -66,6 +82,11 @@ export default function JoinGameComponent() {
     const sendAction = (action:ClientMessage) =>{
         if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN){
             wsRef.current.send(JSON.stringify(action))
+            // ref after draw
+            if (action.action == "drawCard"){
+                sendAction({action:'getTable'})
+            }
+
         }else{
             console.error("brak polonczenia z serverem")
         }
@@ -75,6 +96,27 @@ export default function JoinGameComponent() {
     return (
         <div >
         {error && <div>{error}</div>}
+
+
+        {
+            CurrPlayer !== null  &&(
+                <div>
+                    the curr player is {CurrPlayer}
+                </div>
+            )
+
+        }
+        {
+            CardsNumbers && (
+                CardsNumbers.map((el,i ) => {
+                    return (
+                        <div>player {i} has {el} cards </div>
+                    )
+                } )
+            )
+        }
+
+
 
         <div>
             <input ref={idRef} placeholder="root-id"></input>

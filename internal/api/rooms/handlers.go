@@ -96,6 +96,8 @@ type reqJoin struct {
 
 type TableRef struct {
 	Table *game.Card `json:"Table"`
+	CurrPlayer int `json:"CurrPlayer"`
+	CardsNumbers []int `json:"CardsNumbers"`
 }
 
 func (rm *RoomManager) HandleJoinGame(w http.ResponseWriter, r *http.Request) {
@@ -118,7 +120,7 @@ ReadReq:
 	for {
 		_, payload, err := c.Read(ctx)
 		if err != nil {
-			log.Printf("Klient rozłączony: %v", err)
+			log.Fatalf("Klient rozłączony: %v", err)
 			//continue
 			return
 		}
@@ -224,7 +226,37 @@ func RoomRouter(ctx context.Context, cli *room.Client, r *room.Room) {
 				continue
 			}
 
+
 			r.DrawCard()
+
+			///////// refresh broadcast
+
+			r.Mu.Lock()
+
+			res := TableRef{
+				Table: msg.Card,
+				CurrPlayer: r.CurrPlayer ,
+			}
+			var cards []int
+			for _, roomClient := range r.Clients {
+				cards = append(cards, len( roomClient.Hand ) )
+			}
+			res.CardsNumbers = cards
+
+			r.Mu.Unlock()
+
+
+			resb, err := json.Marshal(res)
+			if err != nil {
+				log.Println("err : ", err)
+				_ = writeTimeout(ctx, time.Second, c, []byte(`{"error": "Błąd formatowania JSON"}`))
+				continue
+			}
+
+			r.Broadcast(ctx, resb)
+			//////////
+
+
 
 		case "placeCard":
 			if !isMyTurn {
@@ -238,15 +270,29 @@ func RoomRouter(ctx context.Context, cli *room.Client, r *room.Room) {
 			}
 
 			err := r.PlaceCard(msg.Card)
+
 			if err != nil {
 				log.Println("err : ", err)
 				_ = writeTimeout(ctx, time.Second, c, []byte(`{"error": "`+err.Error()+`"}`))
 				continue
 			}
 
+			///////// refresh broadcast
+
+			r.Mu.Lock()
+
 			res := TableRef{
 				Table: msg.Card,
+				CurrPlayer: (r.CurrPlayer + r.Session.Direction + len(r.Clients) )% len(r.Clients),
 			}
+			var cards []int
+			for _, roomClient := range r.Clients {
+				cards = append(cards, len( roomClient.Hand ) )
+			}
+			res.CardsNumbers = cards
+
+			r.Mu.Unlock()
+
 
 			resb, err := json.Marshal(res)
 			if err != nil {
@@ -256,6 +302,7 @@ func RoomRouter(ctx context.Context, cli *room.Client, r *room.Room) {
 			}
 
 			r.Broadcast(ctx, resb)
+			//////////
 
 			r.NextPalyer()
 
