@@ -29,6 +29,7 @@ export default function CreateGameComponent() {
     const [table, setTable] = useState<Card| null>(null)
     const [CurrPlayer, setCurrPlayer] = useState<number| null>(null)
     const [CardsNumbers, setCardsNumbers] = useState< Array<number>| null>(null)
+    const [CalledUno, setCalledUno] = useState< Array<boolean>| null>(null)
 
     const [srvMsg, setSrvMsg] = useState<string| null>(null)
     const [error, setError]  = useState<string | null>(null)
@@ -53,7 +54,8 @@ export default function CreateGameComponent() {
                 if (data.Error){
                     setError(data.Error)
                 }
-                if(data.Hand){
+
+                if (data.Hand !== undefined){
                     setHand(data.Hand)
                     setError(null)
                 }
@@ -66,6 +68,11 @@ export default function CreateGameComponent() {
                     setCurrPlayer(data.CurrPlayer)
                     setError(null)
                 }
+                if (data.CalledUno !== undefined){
+                    setCalledUno(data.CalledUno)
+                    setError(null)
+                }
+
                 if(data.CardsNumbers){
                     setCardsNumbers(data.CardsNumbers)
                     setError(null)
@@ -115,6 +122,7 @@ export default function CreateGameComponent() {
 
         }
 
+
         {
             CardsNumbers && (
                 CardsNumbers.map((el,i ) => {
@@ -123,6 +131,29 @@ export default function CreateGameComponent() {
                     )
                 } )
             )
+        }
+
+        {
+            CalledUno != null && (
+                CalledUno.map((el,i ) => {
+                    return (
+                        <div>player {i} uno status {el? "true" : "false"}
+
+                        <button
+                        onClick={()=> sendAction({action:'checkUno', message:`${i}`})}
+                        >
+                        callout uno
+                        </button>
+
+
+
+
+                        </div>
+                    )
+                } )
+
+            )
+
         }
 
 
@@ -138,6 +169,12 @@ export default function CreateGameComponent() {
             >
                 pobierz karte
             </button>
+            <button
+                onClick={()=> sendAction({action:'callUno'})}
+            >
+                poiwedz uno (zadziala przy miniej miz 3 katy )
+            </button>
+
 
         </div>
         {
@@ -152,7 +189,7 @@ export default function CreateGameComponent() {
         <div>
             <h3> hand </h3>
             {
-                hand && (
+                hand != null && (
                     hand.map((el,i) => {
                         if( el.Special == "wild") {
                             return(

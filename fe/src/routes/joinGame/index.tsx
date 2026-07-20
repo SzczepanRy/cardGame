@@ -14,6 +14,7 @@ export default function JoinGameComponent() {
     const [table, setTable] = useState<Card| null>(null)
     const [CurrPlayer, setCurrPlayer] = useState<number| null>(null)
     const [CardsNumbers, setCardsNumbers] = useState< Array<number>| null>(null)
+    const [CalledUno, setCalledUno] = useState< Array<boolean>| null>(null)
 
 
     const [error, setError]  = useState<string | null>(null)
@@ -33,7 +34,8 @@ export default function JoinGameComponent() {
                 if (data.Error){
                     setError(data.Error)
                 }
-                if(data.Hand){
+
+                if (data.Hand!== undefined){
                     setHand(data.Hand)
                     setError(null)
                 }
@@ -45,6 +47,11 @@ export default function JoinGameComponent() {
                     setCurrPlayer(data.CurrPlayer)
                     setError(null)
                 }
+                if (data.CalledUno !== undefined){
+                    setCalledUno(data.CalledUno)
+                    setError(null)
+                }
+
 
                 if(data.CardsNumbers){
                     setCardsNumbers(data.CardsNumbers)
@@ -115,6 +122,28 @@ export default function JoinGameComponent() {
                 } )
             )
         }
+        {
+            CalledUno != null && (
+                CalledUno.map((el,i ) => {
+                    return (
+                        <div>player {i} uno status {el? "true" : "false"}
+                        <button
+                        onClick={()=> sendAction({action:'checkUno', message:`${i}`})}
+                        >
+                        callout uno
+                        </button>
+
+
+
+                        </div>
+                    )
+                } )
+
+            )
+
+        }
+
+
 
 
 
@@ -150,12 +179,19 @@ export default function JoinGameComponent() {
                 pobierz karte
             </button>
 
+            <button
+                onClick={()=> sendAction({action:'callUno'})}
+            >
+                poiwedz uno (zadziala przy miniej miz 3 katy )
+            </button>
+
+
         </div>
 
                 <div>
                     <h3> hand </h3>
                     {
-                        hand && (
+                        hand != null && (
                             hand.map((el,i) => {
                             if( el.Special == "wild") {
                                 return(

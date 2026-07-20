@@ -16,6 +16,8 @@ type Client struct {
 	Name string
 	Conn *websocket.Conn
 	Hand []*game.Card
+	CalledUno bool
+
 }
 
 // co if the clinet wcoud be the in al loop
@@ -78,6 +80,16 @@ func (ro *Room) RemoveClient(name string) error {
 		return nil
 	}
 	return errors.New("taki urzytkownik juz nie istnieje")
+}
+
+func (ro *Room) CheckUno(curr int) bool {
+	ro.Mu.Lock()
+	defer ro.Mu.Unlock()
+	if !ro.Clients[curr].CalledUno &&  len(ro.Clients[curr].Hand) == 1 {
+		return true
+	}
+	return  false
+
 }
 
 func (ro *Room) DrawCard() {
@@ -327,3 +339,6 @@ func (ro *Room) Broadcast(ctx context.Context, msg []byte) {
 	}
 
 }
+
+
+

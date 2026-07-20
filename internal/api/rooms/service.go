@@ -48,3 +48,4 @@ func (rm *RoomManager) DeleteRoom(roomId string) error {
 	}
 	return errors.New("room with a given id already is nonexistant")
 }
+

@@ -10,9 +10,11 @@ export interface Card {
 }
 
 export interface ClientMessage {
-  action: "getTable" | "drawCard" | "placeCard" | "getId";
+  action: "getTable" | "drawCard" | "placeCard" | "getId" | "callUno" | "checkUno";
   card?: Card;
+  message?: string;
 }
+// add t o call uno
 
 export interface ServerResponse {
   Hand?: Array<Card>;
@@ -21,4 +23,5 @@ export interface ServerResponse {
   Message?: string;
   CurrPlayer?: number;
   CardsNumbers?:Array<number>;
+  CalledUno?:Array<boolean>;
 }
