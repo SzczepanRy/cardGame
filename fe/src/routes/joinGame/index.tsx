@@ -1,270 +1,70 @@
-import { Card, ClientMessage, ReqJoin, ServerResponse } from '@/types';
-import { createFileRoute } from '@tanstack/react-router'
-import { useState, useEffect, useRef } from 'react';
+import { createFileRoute } from '@tanstack/react-router';
+import { useState } from 'react';
+import { useUnoGame } from '../../hooks/useUnoGame';
+import { GameBoard } from '../../components/GameBoard';
 
 export const Route = createFileRoute('/joinGame/')({
-  component: JoinGameComponent,
-})
+  component: JoinGameRoute,
+});
 
-export default function JoinGameComponent() {
+function JoinGameRoute() {
+  const [roomIdToJoin, setRoomIdToJoin] = useState<string | null>(null);
+  const [inputValue, setInputValue] = useState('');
 
-    const wsRef = useRef<WebSocket | null>(null)
-    const idRef = useRef<HTMLInputElement| null>(null)
-    const [hand, setHand] = useState< Array<Card>| null>(null)
-    const [table, setTable] = useState<Card| null>(null)
-    const [CurrPlayer, setCurrPlayer] = useState<number| null>(null)
-    const [CardsNumbers, setCardsNumbers] = useState< Array<number>| null>(null)
-    const [CalledUno, setCalledUno] = useState< Array<boolean>| null>(null)
-
-
-    const [error, setError]  = useState<string | null>(null)
-    useEffect(()=>{
-        const ws = new WebSocket('ws://localhost:8080/api/joinGame')
-        wsRef.current = ws
-
-        ws.onopen=()=>{
-            console.log("created")
-        }
-
-        ws.onmessage=(event)=>{
-            try{
-                const data:ServerResponse = JSON.parse(event.data)
-                console.log("Wiadomość z serwera:", data)
-
-                if (data.Error){
-                    setError(data.Error)
-                }
-
-                if (data.Hand!== undefined){
-                    setHand(data.Hand)
-                    setError(null)
-                }
-                if(data.Table){
-                    setTable(data.Table)
-                    setError(null)
-                }
-                if (data.CurrPlayer !== undefined){
-                    setCurrPlayer(data.CurrPlayer)
-                    setError(null)
-                }
-                if (data.CalledUno !== undefined){
-                    setCalledUno(data.CalledUno)
-                    setError(null)
-                }
-
-
-                if(data.CardsNumbers){
-                    setCardsNumbers(data.CardsNumbers)
-                    setError(null)
-                }
-
-
-
-            }catch(err){
-                console.error(err)
-            }
-        }
-
-        ws.onerror=(err)=>{
-            console.error(err)
-        }
-        ws.onclose = (err) => {
-            console.error(err.reason)
-        }
-
-        return ()=>{
-            ws.close()
-        }
-    },[])
-
-    const sendJoin = (req:ReqJoin) =>{
-        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN){
-            wsRef.current.send(JSON.stringify(req))
-
-        }else{
-            console.error("brak polonczenia z serverem")
-        }
-    }
-
-    const sendAction = (action:ClientMessage) =>{
-        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN){
-            wsRef.current.send(JSON.stringify(action))
-            // ref after draw
-            if (action.action == "drawCard"){
-                sendAction({action:'getTable'})
-            }
-
-        }else{
-            console.error("brak polonczenia z serverem")
-        }
-    }
-
-
+  // If we haven't submitted a room ID yet, show the input form
+  if (!roomIdToJoin) {
     return (
-        <div >
-        {error && <div>{error}</div>}
-
-
-        {
-            CurrPlayer !== null  &&(
-                <div>
-                    the curr player is {CurrPlayer}
-                </div>
-            )
-
-        }
-        {
-            CardsNumbers && (
-                CardsNumbers.map((el,i ) => {
-                    return (
-                        <div>player {i} has {el} cards </div>
-                    )
-                } )
-            )
-        }
-        {
-            CalledUno != null && (
-                CalledUno.map((el,i ) => {
-                    return (
-                        <div>player {i} uno status {el? "true" : "false"}
-                        <button
-                        onClick={()=> sendAction({action:'checkUno', message:`${i}`})}
-                        >
-                        callout uno
-                        </button>
-
-
-
-                        </div>
-                    )
-                } )
-
-            )
-
-        }
-
-
-
-
-
-        <div>
-            <input ref={idRef} placeholder="root-id"></input>
-            <button
-                onClick={()=>{
-
-                    if (idRef.current?.value){
-                        const id = idRef.current?.value.trim()
-                        sendJoin({action:"joinTable" ,id:id})
-                    }else{
-                        alert("fill out id before joining")
-                    }
-
-                }}
-            >
-            doloncz
-            </button>
-
+      <div className="about-page" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <h1 className="about-title">Join Game</h1>
+        <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+          <input 
+            type="text" 
+            placeholder="Enter Room ID" 
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            style={{ padding: '10px', background: 'transparent', border: '1px solid #333', color: '#fff' }}
+          />
+          <button 
+            className="about-contact-link"
+            onClick={() => {
+              if (inputValue.trim()) setRoomIdToJoin(inputValue.trim());
+            }}
+          >
+            Join
+          </button>
         </div>
-
-        <div>
-            <button
-                onClick={()=> sendAction({action:'getTable'})}
-            >
-            pobierz stan
-            </button>
-
-            <button
-                onClick={()=> sendAction({action:'drawCard'})}
-            >
-                pobierz karte
-            </button>
-
-            <button
-                onClick={()=> sendAction({action:'callUno'})}
-            >
-                poiwedz uno (zadziala przy miniej miz 3 katy )
-            </button>
-
-
-        </div>
-
-                <div>
-                    <h3> hand </h3>
-                    {
-                        hand != null && (
-                            hand.map((el,i) => {
-                            if( el.Special == "wild") {
-                                return(
-                                    <div key={i}>
-                                    <p> {JSON.stringify(el)}</p>
-                                    <button onClick={
-                                        ()=>{
-                                            el.Color="red";
-                                            sendAction({action:"placeCard" , card:el});
-                                            sendAction({action:"getTable" });
-                                        }
-
-                                    }> red</button>
-                                    <button onClick={
-                                        ()=>{
-                                            el.Color="blue";
-                                            sendAction({action:"placeCard" , card:el})
-                                            sendAction({action:"getTable" })
-                                        }
-
-                                    }> blue</button>
-                                    <button onClick={
-                                        ()=>{
-                                            el.Color="green";
-                                            sendAction({action:"placeCard" , card:el})
-                                            sendAction({action:"getTable" })
-                                        }
-
-                                    }> green</button>
-                                    <button onClick={
-                                        ()=>{
-                                            el.Color="yellow";
-                                            sendAction({action:"placeCard" , card:el})
-                                            sendAction({action:"getTable" })
-                                        }
-
-                                    }> yellow</button>
-
-
-                                    </div>
-                                )
-
-                            }else{
-                             return(
-                                <div key={i}>
-                                    <p> {JSON.stringify(el)}</p>
-                                    <button onClick={
-                                        ()=>{
-                                            sendAction({action:"placeCard" , card:el})
-                                            sendAction({action:"getTable" })
-                                        }
-
-                                    }> throw </button>
-                                    </div>
-                                )
-
-
-                            }
-                        })
-                        )
-
-                    }
-                    <h3>table</h3>
-                    {
-                        table &&(
-                        <p>
-                        {JSON.stringify(table)}
-                        </p>
-                        )
-                    }
-                </div>
-
-
-        </div>
+      </div>
     );
+  }
+
+  // Once we have an ID, mount the actual game component
+  return <ActiveJoinGame roomId={roomIdToJoin} />;
+}
+
+// This component only mounts when we are ready to connect
+function ActiveJoinGame({ roomId }: { roomId: string }) {
+  const { hand, table, error, currPlayer, cardCounts, unoCalls, drawCard, placeCard, refreshTable, callUno, checkUno } = useUnoGame('ws://localhost:8080/api/joinGame', roomId);
+
+  return (
+    <div>
+      {error && <div style={{ color: '#ff5555', textAlign: 'center', padding: '10px' }}>{error}</div>}
+      <GameBoard 
+        hand={hand} 
+        table={table} 
+        currPlayer={currPlayer}
+        cardCounts={cardCounts}
+        unoCalls={unoCalls}
+        onCallUno={callUno}
+        onCheckUno={checkUno}
+        onDraw={() => {
+          drawCard();
+          setTimeout(refreshTable, 100); 
+        }} 
+        onPlace={(card) => {
+          placeCard(card);
+          setTimeout(refreshTable, 100); 
+        }} 
+      />
+    </div>
+  );
 }

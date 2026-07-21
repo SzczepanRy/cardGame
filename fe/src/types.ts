@@ -22,6 +22,6 @@ export interface ServerResponse {
   Error?: string;
   Message?: string;
   CurrPlayer?: number;
-  CardsNumbers?:Array<number>;
-  CalledUno?:Array<boolean>;
+  CardsNumbers?: Array<number>;
+  CalledUno?: Array<boolean>;
 }
