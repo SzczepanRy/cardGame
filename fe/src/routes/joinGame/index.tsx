@@ -17,14 +17,14 @@ function JoinGameRoute() {
       <div className="about-page" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <h1 className="about-title">Join Game</h1>
         <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-          <input 
-            type="text" 
-            placeholder="Enter Room ID" 
+          <input
+            type="text"
+            placeholder="Enter Room ID"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             style={{ padding: '10px', background: 'transparent', border: '1px solid #333', color: '#fff' }}
           />
-          <button 
+          <button
             className="about-contact-link"
             onClick={() => {
               if (inputValue.trim()) setRoomIdToJoin(inputValue.trim());
@@ -41,14 +41,21 @@ function JoinGameRoute() {
 }
 
 function ActiveJoinGame({ roomId }: { roomId: string }) {
-  const { hand, table, error, currPlayer, cardCounts, unoCalls, drawCard, placeCard, refreshTable, callUno, checkUno } = useUnoGame('ws://localhost:8080/api/joinGame', roomId);
+  const { hand, table, error, currPlayer, cardCounts, unoCalls, drawCard, placeCard ,gameWonUser , refreshTable, callUno, checkUno } = useUnoGame('ws://localhost:8080/api/joinGame', roomId);
 
   return (
     <div>
       {error && <div style={{ color: '#ff5555', textAlign: 'center', padding: '10px' }}>{error}</div>}
-      <GameBoard 
-        hand={hand} 
-        table={table} 
+
+      {
+        gameWonUser != -1 && (
+         <p>game Won User {gameWonUser} </p>
+        )
+      }
+
+      <GameBoard
+        hand={hand}
+        table={table}
         currPlayer={currPlayer}
         cardCounts={cardCounts}
         unoCalls={unoCalls}
@@ -56,12 +63,12 @@ function ActiveJoinGame({ roomId }: { roomId: string }) {
         onCheckUno={checkUno}
         onDraw={() => {
           drawCard();
-          setTimeout(refreshTable, 100); 
-        }} 
+          setTimeout(refreshTable, 100);
+        }}
         onPlace={(card) => {
           placeCard(card);
-          setTimeout(refreshTable, 100); 
-        }} 
+          setTimeout(refreshTable, 100);
+        }}
       />
     </div>
   );

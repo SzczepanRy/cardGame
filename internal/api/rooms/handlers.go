@@ -43,6 +43,7 @@ type TableRef struct {
 	CurrPlayer   int        `json:"CurrPlayer"`
 	CardsNumbers []int      `json:"CardsNumbers"`
 	CalledUno    []bool     `json:"CalledUno"`
+	GameWonUser  int        `json:"GameWonUser"`
 }
 
 func (rm *RoomManager) HandleNewGame(w http.ResponseWriter, r *http.Request) {
@@ -399,6 +400,14 @@ func RoomRouter(ctx context.Context, cli *room.Client, r *room.Room) {
 				calledUno = append(calledUno, roomClient.CalledUno)
 			}
 			res.CalledUno = calledUno
+
+			if len(cli.Hand) == 0 {
+				//to naprawde chhyba nie jest dobre bo niby to prawda rze curr user jest tym ktury placuje
+				//ale troche slabo to napisane
+				res.GameWonUser = res.CurrPlayer
+			}else{
+				res.GameWonUser = -1
+			}
 
 			r.Mu.Unlock()
 

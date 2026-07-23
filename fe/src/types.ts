@@ -24,4 +24,5 @@ export interface ServerResponse {
   CurrPlayer?: number;
   CardsNumbers?: Array<number>;
   CalledUno?: Array<boolean>;
+  GameWonUser?:number;
 }

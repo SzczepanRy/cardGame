@@ -262,7 +262,10 @@ func (ro *Room) PlaceCard(card *game.Card) error {
 	if placeCard.Number == 12 {
 		//block the NextPalyer
 		// prechodzimy raz ... a potem jeszczeaz
-		ro.NextPalyer()
+		// this would double mutex lolz
+		// if i did ro.NextPalyer()
+		ro.CurrPlayer = (ro.Session.Direction + ro.CurrPlayer + len(ro.Clients)) % len(ro.Clients)
+
 	}
 
 	if ro.Session.Last != nil && ro.Session.Last.Special != "wild" && ro.Session.Last.Color == "special" && placeCard.Color == "special" && placeCard.Special != "wild" {

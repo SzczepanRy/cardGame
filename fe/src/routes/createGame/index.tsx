@@ -8,7 +8,7 @@ export const Route = createFileRoute('/createGame/')({
 });
 
 function CreateGameComponent() {
-  const { hand, table, error, roomId, currPlayer, cardCounts, unoCalls, drawCard, placeCard, refreshTable, callUno, checkUno } = useUnoGame('ws://localhost:8080/api/newGame');
+  const { hand, table, error, roomId, currPlayer, cardCounts, unoCalls ,gameWonUser, drawCard, placeCard, refreshTable, callUno, checkUno } = useUnoGame('ws://localhost:8080/api/newGame');
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
@@ -22,7 +22,14 @@ function CreateGameComponent() {
   return (
     <div>
       {error && <div style={{ color: '#ff5555', textAlign: 'center', padding: '10px' }}>{error}</div>}
-      
+
+      {
+        gameWonUser != -1 && (
+         <p>game Won User {gameWonUser} </p>
+        )
+      }
+
+
       {roomId && (
         <div style={{ textAlign: 'center', padding: '20px', zIndex: 100, position: 'relative' }}>
           <span style={{ fontSize: '0.8rem', color: '#888', letterSpacing: '1px', display: 'block', marginBottom: '8px' }}>ROOM ID</span>
@@ -31,10 +38,10 @@ function CreateGameComponent() {
           </div>
         </div>
       )}
-      
-      <GameBoard 
-        hand={hand} 
-        table={table} 
+
+      <GameBoard
+        hand={hand}
+        table={table}
         currPlayer={currPlayer}
         cardCounts={cardCounts}
         unoCalls={unoCalls}
@@ -43,12 +50,12 @@ function CreateGameComponent() {
         onCheckUno={checkUno}
         onDraw={() => {
           drawCard();
-          setTimeout(refreshTable, 100); 
-        }} 
+          setTimeout(refreshTable, 100);
+        }}
         onPlace={(card) => {
           placeCard(card);
-          setTimeout(refreshTable, 100); 
-        }} 
+          setTimeout(refreshTable, 100);
+        }}
       />
     </div>
   );

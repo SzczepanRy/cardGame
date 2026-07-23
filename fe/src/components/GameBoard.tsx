@@ -53,24 +53,24 @@ export function GameBoard({ hand, table, currPlayer, cardCounts, unoCalls, myPla
           {cardCounts.map((count, idx) => {
             if (myPlayerIndex !== null && idx === myPlayerIndex) return null;
             const ringTotal = myPlayerIndex !== null ? cardCounts.length - 1 : cardCounts.length;
-            
+
             let x = 0, y = -220, rot = 0;
-            
+
             if (ringTotal > 1) {
-              const startAngle = Math.PI * 0.85; 
+              const startAngle = Math.PI * 0.85;
               const endAngle = Math.PI * 0.15;
               const layoutIdx = myPlayerIndex !== null && idx > myPlayerIndex ? idx - 1 : idx;
               const angle = startAngle - (layoutIdx / (ringTotal - 1)) * (startAngle - endAngle);
 
               x = Math.cos(angle) * 400;
               y = -Math.sin(angle) * 220;
-              
-              rot = (angle - Math.PI / 2) * (180 / Math.PI) * -1; 
+
+              rot = (angle - Math.PI / 2) * (180 / Math.PI) * -1;
             }
 
             return (
-              <div 
-                key={idx} 
+              <div
+                key={idx}
                 className={`opponent-hand-container ${idx === currPlayer ? 'active-turn' : ''}`}
                 style={{
                   transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) rotate(${rot}deg) ${idx === currPlayer ? 'scale(1.15)' : 'scale(1)'}`
@@ -86,7 +86,7 @@ export function GameBoard({ hand, table, currPlayer, cardCounts, unoCalls, myPla
                     </button>
                   )}
                 </div>
-                
+
                 {/* TRUE 3D CARD FAN */}
                 <div className="opponent-cards-fan">
                   {Array.from({ length: count }).map((_, cardIdx) => {
@@ -94,23 +94,23 @@ export function GameBoard({ hand, table, currPlayer, cardCounts, unoCalls, myPla
                     const vMiddle = (vTotal - 1) / 2;
                     const vOffset = cardIdx - vMiddle;
                     const vNorm = vTotal > 1 ? vOffset / vMiddle : 0;
-                    
+
                     const vRot = vNorm * 20;
                     const vY = Math.pow(vNorm, 2) * 15;
 
-                    let vOverlap = 35; 
+                    let vOverlap = 35;
                     if (vTotal > 8) vOverlap = 45;
                     if (vTotal > 15) vOverlap = 52;
 
                     return (
-                      <div 
-                        key={cardIdx} 
-                        className="opponent-card" 
+                      <div
+                        key={cardIdx}
+                        className="opponent-card"
                         style={{
                           transform: `translateY(${vY}px) rotate(${vRot}deg)`,
                           marginLeft: cardIdx === 0 ? '0px' : `-${vOverlap}px`,
                           zIndex: cardIdx
-                        }} 
+                        }}
                       />
                     )
                   })}
@@ -131,18 +131,18 @@ export function GameBoard({ hand, table, currPlayer, cardCounts, unoCalls, myPla
                 discardPile.map((item, index) => {
                   const isTopCard = index === discardPile.length - 1;
                   return (
-                    <div 
+                    <div
                       key={item.id}
-                      style={{ 
+                      style={{
                         position: 'absolute',
                         top: 0,
                         left: 0,
                         zIndex: isTopCard ? 100 : index,
-                        transform: `translateZ(${index * 4}px) scale(1.1) rotateZ(${item.angle}deg)`, 
+                        transform: `translateZ(${index * 4}px) scale(1.1) rotateZ(${item.angle}deg)`,
                       }}
                     >
-                      <div 
-                        className={`uno-card ${isTopCard ? 'discard-top-card' : ''}`} 
+                      <div
+                        className={`uno-card ${isTopCard ? 'discard-top-card' : ''}`}
                         data-color={item.card.Color}
                         style={{
                            boxShadow: isTopCard ? '-5px 10px 15px rgba(0,0,0,0.5)' : 'none',
@@ -174,22 +174,22 @@ export function GameBoard({ hand, table, currPlayer, cardCounts, unoCalls, myPla
         <div className="hand-container">
           {hand.map((card, i) => {
             const isFlipped = flippedCardIndex === i;
-            
+
             const total = hand.length;
             const middle = (total - 1) / 2;
             const offset = i - middle;
             const normalizedOffset = total > 1 ? offset / middle : 0;
-            
-            const rotation = normalizedOffset * 25; 
-            const translateY = Math.pow(normalizedOffset, 2) * 35; 
-            
+
+            const rotation = normalizedOffset * 25;
+            const translateY = Math.pow(normalizedOffset, 2) * 35;
+
             let overlap = 10;
             if (total > 6) overlap = Math.min(85, (total - 6) * 6);
-            if (total > 20) overlap = Math.min(90, 80 + (total - 20) * 1); 
+            if (total > 20) overlap = Math.min(90, 80 + (total - 20) * 1);
 
             return (
-              <div 
-                key={i} 
+              <div
+                key={i}
                 className={`hand-card-wrapper ${isFlipped ? 'flipped' : ''}`}
                 onMouseLeave={() => { if (isFlipped) setFlippedCardIndex(null); }}
                 style={{
@@ -200,9 +200,9 @@ export function GameBoard({ hand, table, currPlayer, cardCounts, unoCalls, myPla
                 } as React.CSSProperties}
               >
                 <div className="card-flipper">
-                  <div 
-                    className="card-front uno-card" 
-                    data-color={card.Color} 
+                  <div
+                    className="card-front uno-card"
+                    data-color={card.Color}
                     onClick={() => {
                       if (card.Color === 'special') {
                         setFlippedCardIndex(i);
