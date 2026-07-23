@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
+import '../styles/_uno.scss'; // Make sure this path points to your main SCSS file!
 
 export const Route = createFileRoute('/')({
   component: HomeComponent,
@@ -6,19 +7,24 @@ export const Route = createFileRoute('/')({
 
 function HomeComponent() {
   return (
-    <div className="about-page" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '80vh' }}>
-      <header className="about-header" style={{ textAlign: 'center' }}>
-        <span className="about-subtitle">Card Engine</span>
-        <h1 className="about-title">UNO</h1>
-      </header>
-      
-      <div className="about-contact" style={{ justifyContent: 'center', marginTop: '40px' }}>
-        <Link to="/createGame" className="about-contact-link">
-          Create Game
-        </Link>
-        <Link to="/joinGame" className="about-contact-link">
-          Join Game
-        </Link>
+    <div className="menu-page">
+      <div className="menu-container">
+        
+        <header className="menu-header">
+          <span className="menu-subtitle">O PROJEKCIE</span>
+          <h1 className="menu-title">UNO</h1>
+          <span className="menu-descriptor">MULTIPLAYER CARD ENGINE</span>
+        </header>
+        
+        <div className="menu-actions">
+          <Link to="/createGame" className="menu-btn">
+            CREATE GAME
+          </Link>
+          <Link to="/joinGame" className="menu-btn">
+            JOIN GAME
+          </Link>
+        </div>
+
       </div>
     </div>
   );

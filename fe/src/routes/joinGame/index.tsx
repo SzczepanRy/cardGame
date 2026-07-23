@@ -37,11 +37,9 @@ function JoinGameRoute() {
     );
   }
 
-  // Once we have an ID, mount the actual game component
   return <ActiveJoinGame roomId={roomIdToJoin} />;
 }
 
-// This component only mounts when we are ready to connect
 function ActiveJoinGame({ roomId }: { roomId: string }) {
   const { hand, table, error, currPlayer, cardCounts, unoCalls, drawCard, placeCard, refreshTable, callUno, checkUno } = useUnoGame('ws://localhost:8080/api/joinGame', roomId);
 

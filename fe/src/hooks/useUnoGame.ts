@@ -8,7 +8,6 @@ export function useUnoGame(wsUrl: string, roomIdToJoin?: string) {
     const [error, setError] = useState<string | null>(null);
     const [roomId, setRoomId] = useState<string | null>(null);
 
-    // New Game State
     const [currPlayer, setCurrPlayer] = useState<number>(0);
     const [cardCounts, setCardCounts] = useState<number[]>([]);
     const [unoCalls, setUnoCalls] = useState<boolean[]>([]);
@@ -50,14 +49,29 @@ export function useUnoGame(wsUrl: string, roomIdToJoin?: string) {
                 if (data.Hand) setHand(data.Hand);
 
                 if (data.Table) {
-                    if (data.Table.Color && data.Table.Color !== "") {
-                        setTable(data.Table);
+                    const incomingTable = data.Table;
+
+                    if (incomingTable.Color && incomingTable.Color !== "") {
+                        setTable(prev => {
+                            const isIdentical = prev &&
+                                prev.Color === incomingTable.Color &&
+                                prev.Number === incomingTable.Number &&
+                                prev.Special === incomingTable.Special;
+
+
+                            if (isIdentical && data.CardsNumbers === undefined) {
+                                return prev;
+                            }
+                            if (isIdentical && data.CardsNumbers !== undefined) {
+                                return { ...incomingTable };
+                            }
+                            return incomingTable;
+                        });
                     } else {
                         setTable(null);
                     }
                 }
 
-                // Handle Broadcast Data
                 if (data.CurrPlayer !== undefined) setCurrPlayer(data.CurrPlayer);
                 if (data.CardsNumbers) setCardCounts(data.CardsNumbers);
                 if (data.CalledUno) setUnoCalls(data.CalledUno);

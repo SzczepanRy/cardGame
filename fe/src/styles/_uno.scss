@@ -1,11 +1,45 @@
 @use 'vars' as *;
 
+/* Add to the top: Lock the viewport to kill scrollbars */
 .uno-board {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  width: 100vw;
+  overflow: hidden; /* KILL SCROLLBARS */
+  box-sizing: border-box;
   padding: 40px;
   background-color: $bg;
+}
+
+/* NEW: Room ID Copy Pill */
+.room-id-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: $bg-2;
+  border: 1px solid $border;
+  padding: 12px 24px;
+  border-radius: 50px;
+  cursor: pointer;
+  font-family: $mono;
+  font-size: 1.25rem;
+  font-weight: bold;
+  letter-spacing: 2px;
+  color: $text-hi;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: $text-hi;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.7);
+  }
+
+  &.copied {
+    border-color: #55ff55;
+    color: #55ff55;
+  }
 }
 
 .table-center {
@@ -25,46 +59,6 @@
     margin: 0 10px; 
   }
 }
-
-.uno-card {
-  width: 120px;
-  height: 180px;
-  border-radius: 12px;
-  border: 2px solid $border;
-  background-color: $bg-2;
-  color: #fff;
-  
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  
-  font-size: 3rem;
-  font-weight: 800;
-  cursor: pointer;
-  
-  box-shadow: 4px 4px 0px rgba(0,0,0, 0.6);
-  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), margin 0.25s ease, box-shadow 0.25s ease;
-  
-  /* Color mapping using data attributes */
-  &[data-color="red"] { border-color: #ff5555; color: #ff5555; }
-  &[data-color="blue"] { border-color: #5555ff; color: #5555ff; }
-  &[data-color="green"] { border-color: #55ff55; color: #55ff55; }
-  &[data-color="yellow"] { border-color: #ffff55; color: #ffff55; }
-  &[data-color="special"] { border-color: #bb55ff; color: #bb55ff; }
-
-  &:hover {
-    transform: translateY(-20px) scale(1.05);
-    box-shadow: 8px 16px 0px rgba(0,0,0, 0.4);
-    z-index: 10;
-  }
-
-  .card-value {
-    /* Optional: text outline effect for extra sharpness */
-    text-shadow: 2px 2px 0px $bg; 
-  }
-}
-
 
 
 body {
@@ -170,30 +164,37 @@ body {
 }
 
 
-/* --- Roster & Layout --- */
-.roster-container {
-  display: flex;
-  justify-content: center;
-  gap: 16px;
-  margin-bottom: 40px;
+.opponents-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; 
+  z-index: 5;
 }
 
-.player-stat {
-  padding: 12px 24px;
-  border: 1px solid $border;
-  background: $bg-2;
-  color: $text;
-  border-radius: 8px;
+.player-stat-3d {
+  position: absolute;
   display: flex;
   flex-direction: column;
   align-items: center;
-  transition: all 0.2s;
+  pointer-events: auto;
+  
+  padding: 12px 20px;
+  background: rgba($bg-2, 0.85);
+  backdrop-filter: blur(4px);
+  border: 1px solid $border;
+  border-radius: 12px;
+  box-shadow: 0 10px 20px rgba(0,0,0, 0.5);
+  
+  /* Smoothly slide into new positions if a player joins/leaves */
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s;
   
   &.active-turn {
     border-color: $text-hi;
-    color: $text-hi;
-    box-shadow: 0 0 12px rgba(255, 255, 255, 0.1);
-    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+    transform: scale(1.1); /* Overridden by React, but adds emphasis */
   }
 
   .player-name {
@@ -201,18 +202,53 @@ body {
     letter-spacing: 0.1em;
     text-transform: uppercase;
     font-weight: bold;
+    color: $text-hi;
+    margin-bottom: 8px;
   }
-  .card-count {
-    font-size: 1.5rem;
-    font-weight: 800;
-  }
+
   .uno-badge {
-    color: #ff5555;
-    font-size: 0.7rem;
+    position: absolute;
+    top: -10px;
+    background: #ff5555;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.6rem;
     font-weight: bold;
     letter-spacing: 0.2em;
-    margin-top: 4px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.4);
   }
+}
+
+/* The Mini Card Backs */
+.mini-hand {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.mini-card {
+  width: 20px;
+  height: 30px;
+  background: repeating-linear-gradient(45deg, $bg-2, $bg-2 3px, $border 3px, $border 6px);
+  border: 1px solid $border-hi;
+  border-radius: 4px;
+  box-shadow: 2px 2px 4px rgba(0,0,0,0.6);
+  margin-left: -12px; /* Overlap them heavily */
+  
+  &:first-child {
+    margin-left: 0;
+  }
+}
+
+/* We need to wrap the whole center area in relative so the ring works */
+.table-area-wrapper {
+  position: relative;
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
 }
 
 .table-grid {
@@ -276,5 +312,530 @@ body {
   
   &:hover {
     filter: brightness(1.3);
+  }
+}
+
+
+/* --- Phase 1: 3D Table & Environment --- */
+
+.table-perspective-container {
+  /* Creates the 3D camera depth */
+  perspective: 1000px;
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.table-grid {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 60px;
+  
+  /* Tilts the table backwards */
+  transform: rotateX(25deg);
+  transform-style: preserve-3d;
+  
+  /* Optional: Adds a subtle glow to the "table" surface */
+  padding: 40px 80px;
+  border-radius: 200px;
+  background: radial-gradient(ellipse at center, rgba($border-hi, 0.05) 0%, transparent 70%);
+}
+
+.uno-card {
+  width: 120px;
+  height: 180px;
+  border-radius: 12px;
+  border: 2px solid $border;
+  background-color: $bg-2;
+  color: #fff;
+  
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  
+  font-size: 3rem;
+  font-weight: 800;
+  cursor: pointer;
+  
+  /* Prevent text highlighting when clicking fast! */
+  user-select: none;
+  -webkit-user-select: none;
+  
+  box-shadow: 4px 4px 0px rgba(0,0,0, 0.6);
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), margin 0.25s ease, box-shadow 0.25s ease;
+  
+  &[data-color="red"] { border-color: #ff5555; color: #ff5555; }
+  &[data-color="blue"] { border-color: #5555ff; color: #5555ff; }
+  &[data-color="green"] { border-color: #55ff55; color: #55ff55; }
+  &[data-color="yellow"] { border-color: #ffff55; color: #ffff55; }
+  &[data-color="special"] { border-color: #ffffff; color: #ffffff; }
+
+  &:hover {
+    transform: translateY(-20px) scale(1.05);
+    box-shadow: 8px 16px 0px rgba(0,0,0, 0.4);
+    z-index: 10;
+  }
+}
+
+.deck-card {
+  position: relative;
+  background: repeating-linear-gradient(45deg, $bg-2, $bg-2 10px, $border 10px, $border 20px);
+  border-color: $border-hi;
+  
+  transform: translateZ(10px);
+  transition: transform 0.1s, box-shadow 0.1s;
+  cursor: pointer;
+  
+  /* FIXED: Shadows stack straight down (Y-axis only) to match table perspective */
+  box-shadow: 
+    0 1px 0 $border,
+    0 2px 0 $bg-2,
+    0 3px 0 $border,
+    0 4px 0 $bg-2,
+    0 5px 0 $border,
+    0 6px 0 $bg-2,
+    0 7px 0 $border,
+    0 8px 0 $bg-2,
+    0 15px 20px rgba(0, 0, 0, 0.8);
+
+  &:hover {
+    transform: translateZ(15px) translateY(-5px);
+    box-shadow: 
+      0 1px 0 $border,
+      0 2px 0 $bg-2,
+      0 3px 0 $border,
+      0 4px 0 $bg-2,
+      0 5px 0 $border,
+      0 6px 0 $bg-2,
+      0 7px 0 $border,
+      0 8px 0 $bg-2,
+      0 9px 0 $border,
+      0 10px 0 $bg-2,
+      0 20px 25px rgba(0, 0, 0, 0.9);
+  }
+
+  &:active {
+    transform: translateZ(5px) translateY(2px);
+    box-shadow: 
+      0 1px 0 $border,
+      0 2px 0 $bg-2,
+      0 3px 0 $border,
+      0 8px 10px rgba(0, 0, 0, 0.8);
+  }
+}
+
+.discard-container {
+  position: relative; /* Essential for absolute stacking */
+  transform-style: preserve-3d;
+  width: 120px;
+  height: 180px;
+}
+
+
+/* --- Phase 2: In-Line 3D Card Flip --- */
+
+// .hand-card-wrapper {
+//   position: relative;
+//   width: 120px;
+//   height: 180px;
+//   perspective: 1000px;
+//   cursor: pointer;
+  
+//   /* The whole wrapper lifts on hover, not just the front face */
+//   transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), margin 0.25s ease;
+  
+//   &:hover {
+//     transform: translateY(-20px) scale(1.05);
+//     z-index: 10;
+//   }
+  
+//   &.flipped .card-flipper {
+//     transform: rotateY(180deg);
+//   }
+
+//   /* Disable the default uno-card hover so it doesn't double-jump inside the wrapper */
+//   .uno-card:hover {
+//     transform: none;
+//     box-shadow: 4px 4px 0px rgba(0,0,0, 0.6);
+//   }
+// }
+
+.card-flipper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transition: transform 0.5s cubic-bezier(0.4, 0.2, 0.2, 1);
+  transform-style: preserve-3d;
+}
+
+.card-front, .card-back {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden; /* Hides the back when turned away */
+  border-radius: 12px;
+}
+
+.card-back {
+  transform: rotateY(180deg);
+  background-color: $bg-2;
+  border: 2px solid $border-hi;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 4px 4px 0px rgba(0,0,0, 0.6);
+  
+  .mini-wheel {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid $bg-2;
+    transform: rotate(45deg);
+    box-shadow: 0 0 10px rgba(0,0,0, 0.5);
+    
+    .wheel-slice {
+      position: absolute;
+      width: 50%;
+      height: 50%;
+      cursor: pointer;
+
+      transition: filter 0.1s, transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+      
+      &.red { top: 0; left: 0; background: #ff5555; }
+      &.blue { top: 0; left: 50%; background: #5555ff; }
+      &.green { top: 50%; left: 0; background: #55ff55; }
+      &.yellow { top: 50%; left: 50%; background: #ffff55; }
+      
+      &:hover { 
+        filter: brightness(1.3);
+        transform: scale(1.2);
+        z-index: 10;
+        box-shadow: 0 0 10px rgba(0,0,0, 0.5);
+      }
+    }
+  }
+  
+  .cancel-flip {
+    all: unset;
+    font-size: 0.6rem;
+    margin-top: 16px;
+    color: $text;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    font-weight: bold;
+    
+    &:hover { color: $text-hi; }
+  }
+}
+
+
+
+/* --- Phase 3: Hand Fanning & Lift Physics --- */
+.hand-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end; /* Align to bottom so the curve anchors nicely */
+  padding: 40px 0 20px 0;
+  height: 220px; /* Give the curve room to breathe */
+  max-width: 90vw;
+}
+
+/* --- 1. Fix the Hand Flicker --- */
+// .hand-card-wrapper {
+//   position: relative;
+//   width: 120px;
+//   height: 180px;
+//   perspective: 1000px;
+//   cursor: pointer;
+  
+//   transform: translateY(var(--card-y, 0)) rotate(var(--card-rot, 0));
+//   transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); /* Removed margin transition */
+  
+//   &:hover {
+//     transform: translateY(calc(var(--card-y, 0) - 40px)) rotate(calc(var(--card-rot, 0) * 0.1)) scale(1.15);
+//     z-index: 100 !important; 
+//     /* Removed margin-right so cards don't push each other out of the cursor's path */
+//   }
+
+//   /* The Anti-Flicker Magic: An invisible box that stretches down to catch your mouse */
+//   &::before {
+//     content: "";
+//     position: absolute;
+//     top: -20px;
+//     left: -15px;
+//     right: -15px;
+//     bottom: -50px; /* Covers the 40px it lifts up! */
+//     z-index: -1;
+//   }
+  
+//   &.flipped .card-flipper {
+//     transform: rotateY(180deg);
+//   }
+// }
+
+/* --- SINGLE UNIFIED HAND WRAPPER --- */
+.hand-card-wrapper {
+  position: relative;
+  width: 120px;
+  height: 180px;
+  perspective: 1000px;
+  cursor: pointer;
+  
+  /* 1. Base Fanning Transform */
+  transform: translateY(var(--card-y, 0)) rotate(var(--card-rot, 0));
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); 
+  
+  /* 2. The Lift & Scale */
+  &:hover {
+    transform: translateY(calc(var(--card-y, 0) - 40px)) rotate(calc(var(--card-rot, 0) * 0.1)) scale(1.15);
+    z-index: 100 !important; 
+  }
+
+  /* 3. The Hover Push (Slides cards to the right so we can see the hovered one) */
+  &:hover ~ & {
+    transform: translateX(40px) translateY(var(--card-y, 0)) rotate(var(--card-rot, 0));
+  }
+
+  /* 4. Anti-Flicker Magic Box */
+  &::before {
+    content: "";
+    position: absolute;
+    top: -20px; left: -15px; right: -15px; bottom: -50px; 
+    z-index: -1;
+  }
+  
+  /* 5. FIX: The Wildcard Flip! */
+  &.flipped .card-flipper {
+    transform: rotateY(180deg);
+  }
+
+  /* 6. FIX: Prevent standard card hover from fighting the wrapper */
+  .uno-card:hover {
+    transform: none;
+    box-shadow: 4px 4px 0px rgba(0,0,0, 0.6);
+  }
+}
+
+/* --- Phase 3: Throw Animation Fix --- */
+@keyframes throwCard {
+  0% {
+    /* Flies straight in from the bottom, unaffected by the wrapper's rotation */
+    transform: translateY(150px) scale(1.5);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.discard-top-card {
+  animation: throwCard 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.discard-container .uno-card {
+  pointer-events: none; /* Ignores mouse completely */
+}
+
+
+/* NEW: 3D Opponent Hand Fan */
+.mini-hand-fan {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  height: 45px;
+  margin-top: 8px;
+}
+
+.mini-card-3d {
+  width: 25px;
+  height: 38px;
+  background: repeating-linear-gradient(45deg, $bg-2, $bg-2 4px, $border 4px, $border 8px);
+  border: 1px solid $border-hi;
+  border-radius: 4px;
+  box-shadow: 2px 2px 4px rgba(0,0,0,0.6);
+  transform-style: preserve-3d;
+  transition: transform 0.3s ease;
+}
+
+.card-overflow-count {
+  margin-left: 6px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: $text;
+  align-self: center;
+}
+
+.catch-btn {
+  padding: 4px 8px;
+  font-size: 0.6rem;
+  margin-top: 12px;
+  color: #ff5555;
+  border-color: #ff5555;
+  border-radius: 4px;
+}
+
+.call-uno-btn {
+  width: 200px;
+  margin-bottom: 20px;
+  background: #ff5555;
+  color: #fff;
+  border-color: #ff5555;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(255, 85, 85, 0.3);
+}
+
+
+/* --- 1. True 3D Opponent Hands --- */
+.opponent-hand-container {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none; 
+  transition: transform 0.5s ease;
+  /* Removed preserve-3d! */
+
+  &.active-turn .player-name {
+    color: #fff;
+    background: rgba($accent, 0.8);
+    border-color: $text-hi;
+    box-shadow: 0 0 15px rgba($accent, 0.6);
+  }
+}
+
+.opponent-info {
+  pointer-events: auto;
+  text-align: center;
+  margin-bottom: 8px; /* Spacing above the cards */
+  z-index: 20;
+
+  .player-name {
+    font-size: 0.75rem;
+    font-weight: bold;
+    letter-spacing: 0.1em;
+    color: $text-hi;
+    text-transform: uppercase;
+    background: rgba($bg-2, 0.7);
+    border: 1px solid $border;
+    padding: 6px 16px;
+    border-radius: 20px;
+    backdrop-filter: blur(4px);
+    transition: all 0.3s ease;
+  }
+}
+
+.opponent-cards-fan {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end; /* Anchors the bottom of the cards together */
+  height: 90px; 
+  
+  /* Creates a localized 3D camera just for this hand, and pitches the cards backwards */
+  transform: perspective(600px) rotateX(-30deg);
+  transform-origin: bottom center;
+}
+
+.opponent-card {
+  width: 65px;
+  height: 100px;
+  border-radius: 6px;
+  border: 1px solid $border-hi;
+  background: repeating-linear-gradient(45deg, $bg-2, $bg-2 4px, $border 4px, $border 8px);
+  
+  /* Drop the shadow straight down, since the cards are standing up now */
+  box-shadow: 0px 4px 8px rgba(0,0,0,0.6);
+  transition: transform 0.3s ease;
+}
+
+
+
+/* --- Main Menu / Landing Page --- */
+
+.menu-page {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* Aligns to the left like your reference image */
+  min-height: 100vh;
+  background-color: $bg;
+  padding: 40px 10%; /* Gives it a nice left margin */
+  box-sizing: border-box;
+}
+
+.menu-container {
+  max-width: 800px;
+  width: 100%;
+  /* Creates the thin separator line seen in your reference */
+  border-bottom: 1px solid $border; 
+  padding-bottom: 40px;
+}
+
+.menu-header {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 40px;
+}
+
+.menu-subtitle {
+  font-size: 0.75rem;
+  color: $text; /* Grey */
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.menu-title {
+  font-size: 7rem; /* Massive bold title */
+  font-weight: 900;
+  color: $text-hi; /* White */
+  margin: 0;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.menu-descriptor {
+  font-size: 0.85rem;
+  color: $text-hi;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  margin-top: 12px;
+  text-transform: uppercase;
+}
+
+.menu-actions {
+  display: flex;
+  gap: 16px;
+}
+
+.menu-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px;
+  background: transparent;
+  color: $text;
+  border: 1px solid $border;
+  text-decoration: none;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  transition: border-color 0.2s ease, color 0.2s ease;
+  cursor: pointer;
+
+  &:hover {
+    border-color: $text-hi;
+    color: $text-hi;
   }
 }
