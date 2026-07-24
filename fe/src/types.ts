@@ -7,10 +7,11 @@ export interface Card {
   Color: string;
   Number: string;
   Special: string;
+  MyId:number;
 }
 
 export interface ClientMessage {
-  action: "getTable" | "drawCard" | "placeCard" | "getId" | "callUno" | "checkUno";
+  action: "getTable" | "drawCard" | "placeCard" | "whoAmI" | "getId" | "callUno" | "checkUno";
   card?: Card;
   message?: string;
 }

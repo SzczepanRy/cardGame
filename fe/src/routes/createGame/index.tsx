@@ -8,7 +8,7 @@ export const Route = createFileRoute('/createGame/')({
 });
 
 function CreateGameComponent() {
-  const { hand, table, error, roomId, currPlayer, cardCounts, unoCalls ,gameWonUser, drawCard, placeCard, refreshTable, callUno, checkUno } = useUnoGame('ws://localhost:8080/api/newGame');
+  const { hand, table, error, roomId, myId, currPlayer, cardCounts, unoCalls ,gameWonUser, drawCard, placeCard, refreshTable, callUno, checkUno } = useUnoGame('ws://localhost:8080/api/newGame');
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
@@ -22,6 +22,14 @@ function CreateGameComponent() {
   return (
     <div>
       {error && <div style={{ color: '#ff5555', textAlign: 'center', padding: '10px' }}>{error}</div>}
+
+    {
+
+         myId && (
+
+         <p>User {myId} </p>
+         )
+    }
 
       {
         gameWonUser != -1 && (

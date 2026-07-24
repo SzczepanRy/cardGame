@@ -17,6 +17,7 @@ interface GameBoardProps {
 
 const getCardDisplay = (card: Card) => {
   if (card.Color === 'special') return card.Special === '4' ? '+4' : '❖';
+  if (card.Special != "" && card.Special != "wild"  ) return `+${card.Special}`;
   const num = Number(card.Number);
   if (num === 10) return '+2';
   if (num === 11) return '↺';

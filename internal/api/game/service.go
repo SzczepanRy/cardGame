@@ -47,7 +47,7 @@ type GameState struct {
 }
 
 var Colors = []string{"red", "green", "blue", "yellow", "special"}
-var Special = []string{"wild", "4" }
+var Special = []string{"wild", "4"}
 
 func InitGame() *GameState {
 	gs := GameState{
@@ -62,8 +62,6 @@ func InitGame() *GameState {
 	gs.Deck["special"] = make([]int, 2)
 	return &gs
 }
-
-
 
 func (gs *GameState) GetCard() *Card {
 
@@ -106,35 +104,37 @@ func (gs *GameState) GetCard() *Card {
 					Special: "",
 				}
 			}
-
 		}
-
 	}
-
 }
 
-func (gs * GameState) CanPlace(card *Card) bool{
-	if gs.Last == nil{
+func (gs *GameState) CanPlace(card *Card) bool {
+	if gs.Last == nil {
+		return true
+	}
+	if card.Special != "" {
+		// chyba karzdy spacial moge tam wpierdoja
 		return true
 	}
 	if gs.Last.Color == card.Color || card.Color == "special" {
 		return true
 	}
-	if gs.Last.Number == card.Number{
+	if gs.Last.Number == card.Number {
 		return true
 	}
-	if card.Special == "wild"{
+
+	/*
+	if card.Special == "wild" {
 		return true
 	}
-	if gs.Last.Color == "special" && gs.Last.Special == "1"{
+	*/
+	if gs.Last.Color == "special" && gs.Last.Special == "1" {
 		// po pobraniu kart z +4
 		return true
 	}
-
-	if gs.Last.Special != "wild" && gs.Last.Color == "special"  && card.Color == "special" && card.Special != "wild"{
+	if gs.Last.Special != "wild" && gs.Last.Color == "special" && card.Color == "special" && card.Special != "wild" {
 		return true
 	}
-
 
 	return false
 

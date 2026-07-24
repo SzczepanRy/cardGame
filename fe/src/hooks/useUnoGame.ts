@@ -9,6 +9,7 @@ export function useUnoGame(wsUrl: string, roomIdToJoin?: string) {
   const [roomId, setRoomId] = useState<string | null>(null);
 
   const [currPlayer, setCurrPlayer] = useState<number>(0);
+  const [myId, setMyId] = useState<string| null>(null);
   const [cardCounts, setCardCounts] = useState<number[]>([]);
   const [unoCalls, setUnoCalls] = useState<boolean[]>([]);
   const [gameWonUser, setGameWonUser] = useState<number>(-1);
@@ -27,18 +28,25 @@ export function useUnoGame(wsUrl: string, roomIdToJoin?: string) {
 
     ws.onopen = () => {
       console.log(`Connected to ${wsUrl}`);
+
+      // gettinid
+
       if (roomIdToJoin) {
         sendAction({ action: "joinTable", id: roomIdToJoin } as ReqJoin);
         setTimeout(
-          () => sendAction({ action: "getTable" } as ClientMessage),
+          () => {
+            sendAction({ action: "getTable" } as ClientMessage);
+            sendAction({ action: "whoAmI" } as ClientMessage);
+          },
+
           100,
         );
       } else {
         sendAction({ action: "getId" } as ClientMessage);
-        setTimeout(
-          () => sendAction({ action: "getTable" } as ClientMessage),
-          100,
-        );
+        setTimeout(() => {
+          sendAction({ action: "getTable" } as ClientMessage);
+          sendAction({ action: "whoAmI" } as ClientMessage);
+        }, 100);
       }
     };
 
@@ -48,15 +56,22 @@ export function useUnoGame(wsUrl: string, roomIdToJoin?: string) {
 
         if (data.Error) setError(data.Error);
         else setError(null);
-
-        if (data.Message && data.Message.length > 5) {
+        if (
+          data.Message &&
+          0 < data.Message.length &&
+          data.Message.length < 5
+        ) {
+          // to jest trche getto bo jak by server cos pojebaj to tu bedzie error
+          console.log("heLLLPPPPPP" , data);
+          setMyId((prev) => (prev ? prev : (data.Message ?? null)));
+        } else {
           setRoomId((prev) => (prev ? prev : (data.Message ?? null)));
         }
 
         if (data.Hand) setHand(data.Hand);
 
         if (data.GameWonUser) {
-          if (data.GameWonUser  !=-1 ) {
+          if (data.GameWonUser != -1) {
             setGameWonUser(data.GameWonUser);
           }
         }
@@ -101,6 +116,7 @@ export function useUnoGame(wsUrl: string, roomIdToJoin?: string) {
     table,
     error,
     roomId,
+    myId,
     currPlayer,
     cardCounts,
     unoCalls,

@@ -102,7 +102,7 @@ func (ro *Room) DrawCard() {
 		return
 	}
 
-	if ro.Session.Last.Color == "special" && ro.Session.Last.Special != "wild" {
+	if ro.Session.Last.Special != "" && ro.Session.Last.Special != "wild" {
 		if num, err := strconv.Atoi(ro.Session.Last.Special); err == nil {
 			for range num {
 				newCard := ro.Session.GetCard()
@@ -138,8 +138,6 @@ func (ro *Room) DrawCard() {
 			log.Println("could not parse str-> from special +2 card ")
 
 		}
-
-
 
 	} else {
 
@@ -188,6 +186,12 @@ func (ro *Room) PlaceCard(card *game.Card) error {
 			break
 		}
 		if card.Special == "wild" && c.Special == "wild" {
+			targetInd = i
+			break
+		}
+
+		if card.Special != "" && card.Special != "wild" && c.Special == "4" && c.Special != "wild" {
+			//this is after we en d a moddified +4 , card  with a chosen color
 			targetInd = i
 			break
 		}
@@ -268,11 +272,18 @@ func (ro *Room) PlaceCard(card *game.Card) error {
 
 	}
 
-	if ro.Session.Last != nil && ro.Session.Last.Special != "wild" && ro.Session.Last.Color == "special" && placeCard.Color == "special" && placeCard.Special != "wild" {
+	// iu robie rzeczy z +4
+	if ro.Session.Last != nil && ro.Session.Last.Special != "wild" && ro.Session.Last.Special != ""  && placeCard.Special != "wild" && placeCard.Special != "" {
+		// przy stackowaniu
 		num, _ := strconv.Atoi(ro.Session.Last.Special)
 		num += 4
 		log.Printf("maby good %v", num )
 		placeCard.Special = strconv.Itoa(num)
+		placeCard.Color = card.Color
+
+	}else if (placeCard.Special != "wild" && placeCard.Special != "" ) {
+		// przy jednym pobieraniu
+		placeCard.Color = card.Color
 	}
 
 	/*

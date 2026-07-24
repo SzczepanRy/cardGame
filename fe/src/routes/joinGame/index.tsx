@@ -41,11 +41,16 @@ function JoinGameRoute() {
 }
 
 function ActiveJoinGame({ roomId }: { roomId: string }) {
-  const { hand, table, error, currPlayer, cardCounts, unoCalls, drawCard, placeCard ,gameWonUser , refreshTable, callUno, checkUno } = useUnoGame('ws://localhost:8080/api/joinGame', roomId);
+  const { hand, table, error,myId , currPlayer, cardCounts, unoCalls, drawCard, placeCard ,gameWonUser , refreshTable, callUno, checkUno } = useUnoGame('ws://localhost:8080/api/joinGame', roomId);
 
   return (
     <div>
       {error && <div style={{ color: '#ff5555', textAlign: 'center', padding: '10px' }}>{error}</div>}
+      {
+        myId   && (
+         <p>User {myId} </p>
+        )
+      }
 
       {
         gameWonUser != -1 && (

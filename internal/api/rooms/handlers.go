@@ -229,6 +229,20 @@ func RoomRouter(ctx context.Context, cli *room.Client, r *room.Room) {
 			res.Message = r.Id
 			sendJSONResponse(ctx, c, res)
 
+		case "whoAmI":
+			var res resData
+			res.Message = ""
+			for i , c := range r.Clients{
+				if c.Conn == cli.Conn {
+					res.Message = strconv.Itoa(i)
+					break
+				}
+
+			}
+
+			sendJSONResponse(ctx, c, res)
+
+
 		case "drawCard":
 			if !isMyTurn {
 				_ = writeTimeout(ctx, time.Second, c, []byte(`{"error": "nie tura gracza"}`))
@@ -352,7 +366,6 @@ func RoomRouter(ctx context.Context, cli *room.Client, r *room.Room) {
 
 		case "callUno":
 			// czy przy czytaniu powinien byc muteks imo
-
 			r.Mu.Lock()
 			if len(cli.Hand) < 3 {
 				cli.CalledUno = true
@@ -361,6 +374,8 @@ func RoomRouter(ctx context.Context, cli *room.Client, r *room.Room) {
 				_ = writeTimeout(ctx, time.Second, c, []byte(`{"error": "za duzo kar by ustawic uno"}`))
 			}
 			r.Mu.Unlock()
+
+
 
 		case "placeCard":
 			if !isMyTurn {
@@ -386,7 +401,7 @@ func RoomRouter(ctx context.Context, cli *room.Client, r *room.Room) {
 			r.Mu.Lock()
 
 			res := TableRef{
-				Table:      msg.Card,
+				Table:      r.Session.Last,
 				CurrPlayer: (r.CurrPlayer + r.Session.Direction + len(r.Clients)) % len(r.Clients),
 			}
 			var cards []int
@@ -401,12 +416,16 @@ func RoomRouter(ctx context.Context, cli *room.Client, r *room.Room) {
 			}
 			res.CalledUno = calledUno
 
-			if len(cli.Hand) == 0 {
-				//to naprawde chhyba nie jest dobre bo niby to prawda rze curr user jest tym ktury placuje
-				//ale troche slabo to napisane
-				res.GameWonUser = res.CurrPlayer
-			}else{
-				res.GameWonUser = -1
+
+			res.GameWonUser = -1
+			for _, client := range r.Clients {
+				if len(client.Hand) == 0 {
+					//to naprawde chhyba nie jest dobre bo niby to prawda rze curr user jest tym ktury placuje
+					//ale troche slabo to napisane
+					res.GameWonUser = res.CurrPlayer
+					log.Printf("game won by user %v", res.CurrPlayer)
+					break
+				}
 			}
 
 			r.Mu.Unlock()
