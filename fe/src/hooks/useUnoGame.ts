@@ -70,7 +70,7 @@ export function useUnoGame(wsUrl: string, roomIdToJoin?: string) {
 
         if (data.Hand) setHand(data.Hand);
 
-        if (data.GameWonUser) {
+        if (data.GameWonUser != null) {
           if (data.GameWonUser != -1) {
             setGameWonUser(data.GameWonUser);
           }

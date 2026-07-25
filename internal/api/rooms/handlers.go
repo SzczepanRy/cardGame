@@ -418,12 +418,12 @@ func RoomRouter(ctx context.Context, cli *room.Client, r *room.Room) {
 
 
 			res.GameWonUser = -1
-			for _, client := range r.Clients {
+
+			for i, client := range r.Clients {
 				if len(client.Hand) == 0 {
-					//to naprawde chhyba nie jest dobre bo niby to prawda rze curr user jest tym ktury placuje
 					//ale troche slabo to napisane
-					res.GameWonUser = res.CurrPlayer
-					log.Printf("game won by user %v", res.CurrPlayer)
+					res.GameWonUser = i
+					log.Printf("game won by user %v", i)
 					break
 				}
 			}
