@@ -109,7 +109,7 @@ func (ro *Room) DrawCard() {
 				ro.Clients[ro.CurrPlayer].Hand = append(ro.Clients[ro.CurrPlayer].Hand, newCard)
 			}
 			// po pobraniu +x sie restetuje
-			ro.Session.Last.Special = "1"
+			ro.Session.Last.Special = "0"
 
 		} else {
 			log.Println("could not parse str-> from special +4 card ")
@@ -124,7 +124,7 @@ func (ro *Room) DrawCard() {
 				ro.Clients[ro.CurrPlayer].Hand = append(ro.Clients[ro.CurrPlayer].Hand, newCard)
 			}
 			// po pobraniu +x sie restetuje
-			ro.Session.Last.Special = "1"
+			ro.Session.Last.Special = "0"
 
 		}else if num, err := strconv.Atoi(ro.Session.Last.Special); err == nil {
 			for range num {
@@ -132,7 +132,7 @@ func (ro *Room) DrawCard() {
 				ro.Clients[ro.CurrPlayer].Hand = append(ro.Clients[ro.CurrPlayer].Hand, newCard)
 			}
 			// po pobraniu +x sie restetuje
-			ro.Session.Last.Special = "1"
+			ro.Session.Last.Special = "0"
 
 		} else {
 			log.Println("could not parse str-> from special +2 card ")
@@ -215,6 +215,7 @@ func (ro *Room) PlaceCard(card *game.Card) error {
 	if placeCard.Number == 10 {
 		if ro.Session.Last != nil && ro.Session.Last.Number == 10 {
 			if ro.Session.Last.Special != "" {
+				// na stole 2  dajemy 2
 				num, _ := strconv.Atoi(ro.Session.Last.Special)
 				num += 2
 				placeCard.Special = strconv.Itoa(num)
@@ -223,6 +224,8 @@ func (ro *Room) PlaceCard(card *game.Card) error {
 				card.Special = strconv.Itoa(num)
 
 			} else {
+
+				// na stole 2 (le juz duplikowane)  dajemy 2
 				placeCard.Special = "4"
 
 
@@ -230,11 +233,25 @@ func (ro *Room) PlaceCard(card *game.Card) error {
 				card.Special = "2"
 			}
 		}else{
-			placeCard.Special = "2"
-			//tu sie juz troche getto robi
-			/// dla broacdacst
-			card.Special = "2"
+			if ro.Session.Last.Special != "" && ro.Session.Last.Special != "wild" {
 
+				// na stole 4 (le juz duplikowane albo nie )  dajemy 2
+
+				num, _ := strconv.Atoi(ro.Session.Last.Special)
+				num += 2
+				placeCard.Special = strconv.Itoa(num)
+
+				/// dla broacdacst
+				card.Special = strconv.Itoa(num)
+
+
+			}else{
+				placeCard.Special = "2"
+				//tu sie juz troche getto robi
+				/// dla broacdacst
+				card.Special = "2"
+
+			}
 		}
 
 	}
@@ -273,7 +290,7 @@ func (ro *Room) PlaceCard(card *game.Card) error {
 	}
 
 	// iu robie rzeczy z +4
-	if ro.Session.Last != nil && ro.Session.Last.Special != "wild" && ro.Session.Last.Special != ""  && placeCard.Special != "wild" && placeCard.Special != "" {
+	if placeCard.Number != 10 && ro.Session.Last != nil && ro.Session.Last.Special != "wild" && ro.Session.Last.Special != ""  && placeCard.Special != "wild" && placeCard.Special != "" {
 		// przy stackowaniu
 		num, _ := strconv.Atoi(ro.Session.Last.Special)
 		num += 4

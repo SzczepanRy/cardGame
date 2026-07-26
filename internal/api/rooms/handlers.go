@@ -350,6 +350,17 @@ func RoomRouter(ctx context.Context, cli *room.Client, r *room.Room) {
 					r.Broadcast(ctx, resb)
 					//////////
 
+
+					r.Mu.Lock()
+					// nie wim czy modge dwa razy wyslac
+					var res2 resData
+					for _ , cc := range r.Clients[num].Hand{
+						res2.Hand = append(res2.Hand, *cc)
+					}
+					r.Mu.Unlock()
+
+					sendJSONResponse(ctx, r.Clients[num].Conn, res2)
+
 				} else {
 					// wrondg unno is called
 					_ = writeTimeout(ctx, time.Second, c, []byte(`{"error": "Błąd przytkownik kliknol uno"}`))
